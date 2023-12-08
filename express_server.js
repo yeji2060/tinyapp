@@ -73,6 +73,13 @@ app.post("/urls/:id", (req, res) => {
   } else {
     res.status(404).send('URL not found');
   }
+})
+
+app.post("/login", (req, res) => {
+  const username = req.body;
+
+  res.cookie("username", username);
+  res.redirect("/urls");
 
 })
 
