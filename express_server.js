@@ -53,16 +53,28 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const urlID = req.params.id;
+  const id = req.params.id;
 
-  if(urlDatabase[urlID]) {
-    delete urlDatabase[urlID];
+  if(urlDatabase[id]) {
+    delete urlDatabase[id];
+    res.redirect('/urls');
+  } else {
+    res.status(404).send('URL not found');
+  }
+});
+
+app.post("/urls/:id", (req, res) => {
+  const id = req.params.id;
+  const newLongURL = req.body.newLongURL;
+
+  if (urlDatabase[id]) {
+    urlDatabase[id] = newLongURL;
     res.redirect('/urls');
   } else {
     res.status(404).send('URL not found');
   }
 
-});
+})
 
 function generateRandomString() {
   const alphanumericCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
