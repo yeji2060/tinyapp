@@ -52,6 +52,18 @@ app.get("/u/:id", (req, res) => {
   res.redirect(longURL);
 });
 
+app.post("/urls/:id/delete", (req, res) => {
+  const urlID = req.params.id;
+
+  if(urlDatabase[urlID]) {
+    delete urlDatabase[urlID];
+    res.redirect('/urls');
+  } else {
+    res.status(404).send('URL not found');
+  }
+
+});
+
 function generateRandomString() {
   const alphanumericCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let randomString = '';
