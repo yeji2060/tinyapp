@@ -87,6 +87,11 @@ app.post("/login", (req, res) => {
 
 })
 
+app.post("/logout", (req, res) => {
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
+
 
 function generateRandomString() {
   const alphanumericCharacters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';

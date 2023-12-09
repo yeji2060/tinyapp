@@ -12,7 +12,10 @@
       </div>
     </div>
     <% if (username) { %>
-      <p>Welcome, <%=Object.values(username) %> !</p>
+      <p>Logged in as: <%=Object.values(username) %> !</p>
+      <form method="POST" action="/logout">
+        <button type="submit">Logout</button>
+      </form>
     <% } else { %>
       <form method="POST" action="/login">
         <label for="username">Username </label>
