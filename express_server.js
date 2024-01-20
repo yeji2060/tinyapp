@@ -51,18 +51,16 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new", (req, res) => {
-  
+app.get("/urls/new", authenticateUser, (req, res) => {
+
   const templateVars = {
     users: users,
     user_ID: req.cookies["user_ID"]
   }
-
-
   res.render("urls_new", templateVars);
 });
 
-app.post("/urls/new", (req, res) => {
+app.post("/urls/new",authenticateUser, (req, res) => {
   const newId = generateRandomString();
   urlDatabase[newId] = req.body.longURL;
 
@@ -87,11 +85,18 @@ app.post("/urls", (req, res) => {
 });
 
 app.get("/u/:id", (req, res) => {
-  const longURL = urlDatabase[req.params.id];
-  res.redirect(longURL);
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+
+  if(!longURL) {
+    res.status(404).send('URL not found');
+  } else {
+    res.redirect(longURL);
+  }
+  
 });
 
-app.get("/urls/:id/edit", (req,res) => {
+app.get("/urls/:id/edit", authenticateUser, (req,res) => {
   
   const templateVars = {
     urlDatabase: urlDatabase,
@@ -107,7 +112,7 @@ app.get("/urls/:id/edit", (req,res) => {
 })
 
 
-app.post("/urls/:id/edit", (req, res) => {
+app.post("/urls/:id/edit",authenticateUser, (req, res) => {
 
   const id = req.params.id;
 
@@ -151,7 +156,6 @@ app.post("/login", (req, res) => {
   } else {
     res.status(400).send('email is not corrects')
   }
-
 
   res.redirect("/urls");
 })
@@ -208,10 +212,22 @@ function generateRandomString() {
 function getUserByEmail(email) {
   for (const userId in users) {
     if (users[userId].email === email) {
-
       return users[userId];
     }
   }
   return null;
 }
 
+function authenticateUser(req, res, next) {
+  const user_ID = req.cookies.user_ID;
+  if(user_ID && users[user_ID]) {
+    next();
+  } else {
+    if (req.method === "GET") {
+      res.redirect('/login');
+    } else {
+      res.status(401).send('You must be logged in first');
+    }
+    
+  }
+}
