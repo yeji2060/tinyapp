@@ -1,14 +1,10 @@
 const express = require("express");
 const cookieParser = require('cookie-parser');
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080; // default port 8080
 
 app.set("view engine", "ejs");
-
-// const urlDatabase = {
-//   "b2xVn2": "http://www.lighthouselabs.ca",
-//   "9sm5xK": "http://www.google.com"
-// };
 
 const urlDatabase = {
   b6UTxQ: {
@@ -182,13 +178,12 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const userObj = getUserByEmail(req.body.email);
 
-  if(getUserByEmail(req.body.email)){
+  if(userObj && bcrypt.compareSync(req.body.password, userObj.password)){
     res.cookie("user_ID", userObj.id);
+    res.redirect("/urls");
   } else {
-    res.status(400).send('email is not correct')
+    res.status(400).send('Email or password is incorrect')
   }
-
-  res.redirect("/urls");
 })
 
 app.post("/logout", (req, res) => {
@@ -204,6 +199,7 @@ app.get("/register", (req, res) => {
     user_ID: req.cookies["user_ID"] 
   }
 
+
   res.render("urls_register",templateVars);
 })
 
@@ -216,10 +212,12 @@ app.post("/register", (req, res) => {
     res.status(400).send('email is already exist');
   } else {
     const newId = generateRandomString();
+    const password = req.body.password;
+    const hashedPassword = bcrypt.hashSync(password, 10);
     users[newId] = {
       id: newId,
       email: req.body.email,
-      password: req.body.password
+      password: hashedPassword
     }
 
     console.log(users);
@@ -276,8 +274,6 @@ function checkLoggedIn(req, res, next) {
 
 function checkUrlID (req, res, next) {
 
-  // const urlID = req.params.id;
-
    const requestedURL = urlDatabase[req.params.id];
 
   if (requestedURL === undefined) {
@@ -285,13 +281,6 @@ function checkUrlID (req, res, next) {
   } else {
     next();
   }
-
-
-  // if(!userURLs.hasOwnProperty(urlID)) {
-  //   res.status(404).send("URL ID is not existed");
-  // } else {
-  //   next();
-  // }
 }
 
 
