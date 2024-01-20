@@ -32,11 +32,11 @@
         <tbody>
           <% Object.keys(urls).forEach(function(key) { %>
             <tr>
-
+`
               <td><a href= "/?url<%= key %>"><%= key%></a></td>
               <td><%= urls[key] %></td>
               <td>  
-                <form method="POST" action="/urls/<%= key %>/delete">
+                <form method="GET" action="/urls/<%= key %>/edit">
                   <button type ="submit">Edit</button>
                 </form>
               </td>

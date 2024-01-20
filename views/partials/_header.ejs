@@ -11,17 +11,25 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <% if (username) { %>
-      <p>Logged in as: <%=Object.values(username) %> !</p>
+
+    <% if (user_ID) { %>
+      <p>Logged in as: <%= users[user_ID].email%> !</p>
+      <!-- <p>Logged in</p> -->
       <form method="POST" action="/logout">
         <button type="submit">Logout</button>
       </form>
     <% } else { %>
-      <form method="POST" action="/login">
-        <label for="username">Username </label>
-        <input type="text" id="username" name="username" required>
+
+      <form method="GET" action="/login">
         <button type="submit">Login</button>
       </form>
+      <p> or </p>
+      <form method="GET" action="/register">
+        <button type="submit">Register</button>
+      </form>
+
     <% } %>
+     
+      
   </nav>
 </header>
