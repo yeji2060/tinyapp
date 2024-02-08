@@ -1,5 +1,5 @@
 const express = require("express");
-const getUserByEmail = require('./helpers.js');
+const { getUserByEmail } = require('./helpers.js');
 
 const session = require('cookie-session');
 const bcrypt = require("bcryptjs");
@@ -20,6 +20,7 @@ const urlDatabase = {
   },
 };
 
+//password for the first user here is "abcd".
 const users = {
   aJ48lW: { 
     id: "aJ48lW",
@@ -35,13 +36,17 @@ const users = {
 
 app.use(express.urlencoded({ extended: true }));
 
+app.use(express.json());
+
 app.use(cookieSession ({
   name: "user_ID",
   keys: ["secret"]
 }))
 
-app.get("/", (req, res) => {
-  res.send("Hello!");
+app.get("/",checkLoggedIn, (req, res) => {
+  
+  res.redirect("/urls");
+  
 });
 
 app.listen(PORT, () => {
@@ -71,7 +76,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
-app.get("/urls/new",checkLoggedIn, (req, res) => {
+app.get("/urls/new", checkLoggedIn, (req, res) => {
   const user_ID = req.session.user_ID;
   const user = users[user_ID];
 
@@ -84,8 +89,8 @@ app.get("/urls/new",checkLoggedIn, (req, res) => {
 });
 
 app.post("/urls/new",checkLoggedIn, (req, res) => {
-  const newId = generateRandomString();
 
+  const newId = generateRandomString();
 
   urlDatabase[newId] = {
     longURL: req.body.longURL,
@@ -95,30 +100,13 @@ app.post("/urls/new",checkLoggedIn, (req, res) => {
   res.redirect("/urls");
 })
 
-// app.get("/urls/:id", checkUrlID, authenticateUser, (req, res) => {
-
-//   const user_ID = req.session.user_ID;
-//   const userURLs = urlsForUser(user_ID);
-
-//   const templateVars = { 
-//     urlDatabase: userURLs,
-//     id: req.params.id,
-//     longURL: userURLs[req.params.id], 
-//     users: users,
-//     user_ID: user_ID
-//   }
-
-//   res.render("urls_show", templateVars);
-// });
-
-
-app.post("/urls", (req, res) => {
+app.post("/urls",checkLoggedIn, (req, res) => {
 
   console.log(req.body); // Log the POST request body to the console
   res.send("Ok"); // Respond with 'Ok' (we will replace this)
 });
 
-app.get("/u/:id", (req, res) => {
+app.get("/u/:id",checkUrlID, (req, res) => {
 
   const shortURL = req.params.id;
   const longURL = urlDatabase[shortURL].longURL;
@@ -130,7 +118,7 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
-app.get("/urls/:id", checkUrlID, authenticateUser, (req,res) => {
+app.get("/urls/:id",checkUrlID, authenticateUser,  (req,res) => {
 
   const user_ID = req.session.user_ID;
   const user = users[user_ID];
@@ -145,13 +133,13 @@ app.get("/urls/:id", checkUrlID, authenticateUser, (req,res) => {
     user,
     user_ID
   };
-  
+
   res.render("urls_show", templateVars);
+
 })
 
 
-app.post("/urls/:id", checkUrlID, authenticateUser, (req, res) => {
-
+app.post("/urls/:id",checkUrlID, authenticateUser, (req, res) => {
   const id = req.params.id;
   const newURL = req.body.newURL;
 
@@ -163,7 +151,7 @@ app.post("/urls/:id", checkUrlID, authenticateUser, (req, res) => {
   }
 });
 
-app.post("/urls/:id/delete",checkUrlID, authenticateUser,(req, res) => {
+app.post("/urls/:id/delete",checkUrlID, authenticateUser,  (req, res) => {
   const id = req.params.id;
 
   if(urlDatabase[id]) {
@@ -259,7 +247,7 @@ function authenticateUser(req, res, next) {
     }
   } else {
     if (req.method === "GET") {
-      res.redirect('/login');
+      res.redirect(403, '/login');
     } else {
       res.status(401).send('You must be logged in first');
     }
@@ -271,7 +259,7 @@ function checkLoggedIn(req, res, next) {
    if (user_ID && users[user_ID]) {
     next();
    } else {
-    res.status(401).send("You need to log in first");
+    res.redirect(302, "/login");
    }
 }
 
@@ -280,7 +268,7 @@ function checkUrlID (req, res, next) {
    const requestedURL = urlDatabase[req.params.id];
 
   if (requestedURL === undefined) {
-    res.status(404).send("URL short ID is not existed");
+    res.status(404).send("URL short ID is not existed"); 
   } else {
     next();
   }
