@@ -1,6 +1,7 @@
 const express = require("express");
+const getUserByEmail = require('./helpers.js');
 
-const sessionession = require('cookie-session');
+const session = require('cookie-session');
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
 const app = express();
@@ -84,7 +85,7 @@ app.get("/urls/new",checkLoggedIn, (req, res) => {
 
 app.post("/urls/new",checkLoggedIn, (req, res) => {
   const newId = generateRandomString();
-  console.log(newId + " New Short URL ID");
+
 
   urlDatabase[newId] = {
     longURL: req.body.longURL,
@@ -185,7 +186,7 @@ app.get("/login", (req, res) => {
 })
 
 app.post("/login", (req, res) => {
-  const userObj = getUserByEmail(req.body.email);
+  const userObj = getUserByEmail(req.body.email, users);
 
   if(userObj && bcrypt.compareSync(req.body.password, userObj.password)){
     req.session.user_ID = userObj.id;
@@ -215,7 +216,7 @@ app.post("/register", (req, res) => {
 
   if(req.body.email == null || req.body.password == null) {
     res.status(400).send('email/password are empty');
-  } else if (getUserByEmail(req.body.email)) {
+  } else if (getUserByEmail(req.body.email, users)) {
     res.status(400).send('email is already exist');
   } else {
     const newId = generateRandomString();
@@ -247,14 +248,6 @@ function generateRandomString() {
   return randomString;
 };
 
-function getUserByEmail(email) {
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      return users[userId];
-    }
-  }
-  return null;
-}
 
 function authenticateUser(req, res, next) {
   const user_ID = req.session.user_ID;
