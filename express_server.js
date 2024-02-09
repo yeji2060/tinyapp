@@ -67,12 +67,17 @@ app.get("/urls", (req, res) => {
   const user = users[user_ID];
   const userURLs = urlsForUser(user_ID);
 
+   if (!user_ID || !users[user_ID]) {
+    res.status(401).send('You must be logged in first. Please go to /login in order to log in or go to /register for registration');
+  };
 
   const templateVars = { 
     urls: userURLs,
     user,
     user_ID
- };
+  };
+
+
   res.render("urls_index", templateVars);
 });
 
